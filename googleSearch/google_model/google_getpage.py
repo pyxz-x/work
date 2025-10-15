@@ -10,7 +10,7 @@ from time import sleep
 import json
 import requests
 from lxml import etree
-from 谷歌搜索.google_model.google_getCookies import get_cookies
+from .google_getCookies import get_cookies
 
 
 class GETLINK:

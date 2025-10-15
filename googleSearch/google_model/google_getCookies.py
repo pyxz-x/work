@@ -25,40 +25,9 @@ def get_cookies():
     # print(proxy)
     # options.add_argument(f'--proxy-server={proxy["https"]}')
     # options.add_argument("--headless")
-
-    # 创建Chrome对象，指定version_main避免网络请求
-    try:
-        # 首先尝试指定Chrome版本避免网络请求
-        driver = Chrome(options=options)
-    except:
-        # 如果失败，尝试使用本地chromedriver
-        import os
-
-        driver_path = None
-        # 常见的chromedriver路径
-        possible_paths = [
-            "/usr/local/bin/chromedriver",
-            "/usr/bin/chromedriver",
-            "/opt/homebrew/bin/chromedriver",
-            "chromedriver",
-        ]
-        for path in possible_paths:
-            if os.path.exists(path):
-                driver_path = path
-                print(driver_path)
-                break
-
-        if driver_path:
-            from selenium import webdriver
-            from selenium.webdriver.chrome.service import Service
-
-            service = Service(driver_path)
-            driver = webdriver.Chrome(service=service, options=options)
-        else:
-            # 最后尝试不指定版本
-            driver = Chrome(options=options)
+    # 首先尝试指定Chrome版本避免网络请求
+    driver = Chrome(options=options)
     cookie_ = {}
-
     try:
         # 访问谷歌首页
         driver.get(url)
@@ -77,7 +46,7 @@ def get_cookies():
         cookie_ = {cookie["name"]: cookie["value"] for cookie in cookies}
         # input()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"未成功获取cookie...")
     finally:
         driver.quit()  # Ensure the driver quits no matter what
 
