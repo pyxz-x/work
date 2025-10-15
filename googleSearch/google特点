@@ -1,0 +1,19 @@
+正常页面
+        html.xpath('//div[@class="card-section"]') = 0
+        html.xpath('//h3[@class="LC20lb MBeuO DKV0Md"]/text()') > 0
+        html.xpath('//div[@class="MjjYud"]') > 0
+失效页面
+        html.xpath('//div[@class="card-section"]') > 0
+        html.xpath('//h3[@class="LC20lb MBeuO DKV0Md"]/text()') > 0
+        html.xpath('//div[@class="MjjYud"]') = 0
+ip或cookie失效页面
+        html.xpath('//div[@class="card-section"]') = 0
+        html.xpath('//h3[@class="LC20lb MBeuO DKV0Md"]/text()') = 0
+        html.xpath('//div[@class="MjjYud"]') = 0
+
+input最后一页
+        html.xpath('//div[@class="card-section"]') > 0
+        html.xpath('//h3[@class="LC20lb MBeuO DKV0Md"]/text()') > 0
+        html.xpath('//div[@class="MjjYud"]') > 0
+        html.xpath("//a[@class='fl']/@href") >0
+        html.xpath("//a[@class='LLNLxf']") = 0
