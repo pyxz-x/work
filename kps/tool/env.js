@@ -12,13 +12,26 @@ HTMLIFrameElement = function(){
 }
 HTMLIFrameElement.prototype = {}
 
-Object.defineProperties(HTMLIFrameElement, {
-    'contentWindow':{
+Object.defineProperties(HTMLIFrameElement.prototype, {
+    contentWindow:{
       value: window,
       writable: false,
       configurable: false,
       enumerable: true
-}
+},
+    style:{
+        get() {
+            return {
+                0: "width",
+                1: "height",
+                2: "display",
+                display: "none",
+                width: "0px",
+                height: "0px",
+                border: "0px"
+            }
+        }
+    }
 });
 var iframe = {}
 Object.setPrototypeOf(iframe, HTMLIFrameElement.prototype)
@@ -27,7 +40,7 @@ HTMLDivElement = function HTMLDivElement() {
     throw new TypeError('Illegal invocation')
 }
 HTMLDivElement.prototype = {}
-Object.setPrototypeOf(HTMLDivElement,{
+Object.defineProperties(HTMLDivElement.prototype,{
     children:{
         get(){
             return{0 :iframe}
@@ -41,7 +54,7 @@ Object.setPrototypeOf(HTMLDivElement,{
 })
 
 div_dom = {}
-Object.setPrototypeOf(div_dom, HTMLDivElement)
+Object.setPrototypeOf(div_dom, HTMLDivElement.prototype)
 console.log(Object.getPrototypeOf(div_dom))
 document = {
     createElement: function (tagname) {
@@ -114,13 +127,14 @@ window.KPSDK = {}
 KPSDK = window.KPSDK
 
 // 0.3版本
+// 0.3版本
 function watch(obj, name, visited = new WeakSet()) {
     // 防止循环引用导致无限递归
-    if (obj === null || typeof obj !== 'object' || visited.has(obj)) {
-        return obj;
-    }
+    // if (obj === null || typeof obj !== 'object' || visited.has(obj)) {
+    //     return obj;
+    // }
 
-    visited.add(obj);
+    // visited.add(obj);
 
     // 检查原型链访问
     const checkPrototypeChain = (target, property) => {
@@ -148,8 +162,8 @@ function watch(obj, name, visited = new WeakSet()) {
 
                 // *** 核心修改：针对 window.navigator.platform 的特殊处理 ***
                 if (name === "navigator" && property === "platform") {
-                    console.log(`对象 => ${name}, 特殊处理属性: ${String(property)}, 模拟值为: Win32`); // 你可以根据需要修改模拟值
-                    return "Win32"; // 直接返回一个你想要的模拟值，绕过原生访问
+                    console.log(`对象 => ${name}, 特殊处理属性: ${String(property)}, 模拟值为: 'MacIntel'`); // 你可以根据需要修改模拟值
+                    return "MacIntel"; // 直接返回一个你想要的模拟值，绕过原生访问
                 }
                 // ***************************************************************
 
@@ -159,6 +173,7 @@ function watch(obj, name, visited = new WeakSet()) {
                 if (typeof value === 'object' && value !== null) {
                     // 为嵌套对象生成一个更具体的名称
                     const nestedName = `${name}.${String(property)}`;
+                    // console.log("deep",nestedName)
                     return watch(value, nestedName, visited);
                 }
 
@@ -198,6 +213,14 @@ function watch(obj, name, visited = new WeakSet()) {
             } catch (e) {
                 console.error(`Error in set trap for ${name}.${String(property)}:`, e);
             }
+
+            // 深度监听嵌套对象
+            if (typeof newValue === 'object' && newValue !== null) {
+                // 为嵌套对象生成一个更具体的名称
+                const nestedName = `${name}.${String(property)}`;
+                // console.log("deep",nestedName)
+                newValue= watch(newValue, nestedName, visited);
+            }
             return Reflect.set(target, property, newValue, receiver);
         },
         // 捕获 in 操作符
@@ -223,12 +246,18 @@ function watch(obj, name, visited = new WeakSet()) {
         // 捕获 Object.setPrototypeOf()
         setPrototypeOf: function (target, prototype) {
             console.log(`特殊检测: setPrototypeOf 被调用 (对象: ${name})`);
+
             return Reflect.setPrototypeOf(target, prototype);
         },
         // 捕获 Object.getPrototypeOf()
         getPrototypeOf: function (target) {
             console.log(`特殊检测: getPrototypeOf 被调用 (对象: ${name})`);
-            return Reflect.getPrototypeOf(target);
+            const nestedName = `${name}.${String("原型")}`;
+            if(target.__proto__){
+                // console.log(target)
+                return watch(Reflect.getPrototypeOf(target),nestedName);
+            }
+            return Reflect.getPrototypeOf(target)
         }
     });
 }
