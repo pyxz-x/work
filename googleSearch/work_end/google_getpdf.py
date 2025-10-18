@@ -20,7 +20,6 @@ urllib3.disable_warnings()
 
 
 class GETPDF:
-    inputfile_name = ""
     reslut_json_path = ""
     proxy = {}
     max_workers = 5  # 线程池配置 默认为5
@@ -47,13 +46,18 @@ class GETPDF:
 
     def get_finished(self):
         if os.path.exists("finished.txt"):
-            self.finished = open("finished.txt", "r", encoding="utf-8").readlines()
+            self.finished = open("finished.txt", "r", encoding="utf").readlines()
 
     def get_page_links(self):
-        with open("page_links.json", "r", encoding="utf") as f:
+        with open("page_links.json", "r", encoding="utf-8") as f:
             datas = f.readlines()
             for data in datas:
-                self.page_links.append(json.loads(data))
+                try:
+                #print(1,data)
+                #print(2,json.loads(data))
+                    self.page_links.append(json.loads(data))
+                except Exception as e:
+                    continue
 
     def get_cookies(self):
         with open("cookies.json", "r", encoding="utf-8") as f:
@@ -79,6 +83,9 @@ class GETPDF:
         if url_ + "\n" in shixiao_pagelink:
             print(f"失效pagelink 跳过 {url_}")
             return
+        if url_ in self.finished:
+            print(f'getted {url_}')
+            return
         print(f"正在获取 {url_}")
         headers = {
             "referer": "https://www.google.com/",
@@ -103,7 +110,7 @@ class GETPDF:
             "source": source_,
             "语言": language_,
         }
-        sleep(random.randint(1, 2))
+        # sleep(random.randint(1, 2))
         # resp.encoding = 'utf-8'
         html = etree.HTML(resp.text)
         shixiao_div = html.xpath('//div[@class="card-section"]')
@@ -117,15 +124,12 @@ class GETPDF:
         if len(result_div) == 0 and len(shixiao_div) == 0 and len(titles) == 0:
             # print(resp.text)
             # ip = get_ip().replace('\n', '')
-            sleep(10)
+            #  sleep(5)
             #         self.proxy = {
             #  "http": f"http://{ip}",
             #   "https": f"https://{ip}"
             # }
             self.get_cookies()
-            while len(self.cookies) == 0:
-                sleep(15)
-                self.get_cookies()
             self.get_pdf(url_, self.cookies, input_, source_, language_)
         if len(result_div) != 0:
             for div in result_div:
@@ -206,13 +210,4 @@ class GETPDF:
                 except Exception as e:
                     print(e)
                     continue  # 即使某个任务失败，也继续执行其他任务
-
-            # 等待所有任务完成
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    future.result()  # 获取结果，以便捕获异常
-                except Exception as e:
-                    print(e)
-                    continue  # 即使某个任务失败，也继续执行其他任务
-
 
