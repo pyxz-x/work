@@ -5,7 +5,7 @@
 @Author : 大漂亮lzh
 @Project : pythonCode
 """
-
+import concurrent.futures
 import os
 import random
 from time import sleep
@@ -22,18 +22,14 @@ class GETLINK:
     page_links_path = ""
     input_value_getted_path = ""
     proxy = {}
+    max_workers = 5   # 现成默认为5
 
     def __init__(self):
         self.cookies = {}
         self.pagelinks_getted = []
         self.input_value = []
         self.input_value_getted = {}
-        self.all_json = {
-            "url": "",
-            "input": "",
-            "source": "",
-            "lang": "",
-        }
+
 
     # 获取已经获取到的pagelink
     def get_GettedLinks(self):
@@ -63,7 +59,7 @@ class GETLINK:
             self.input_value_getted = json.load(fp)
 
     # 获取页面url 递归获取
-    def get_links(self, url, input_value_):
+    def get_links(self, url, all_json):
         # 获取实效url
         shixiao_pagelink = []
         if os.path.exists("shixiao_pagelink.txt"):
@@ -86,7 +82,7 @@ class GETLINK:
             proxies=proxies,
             verify=False,
         )
-        sleep(random.randint(1, 2))
+        sleep(random.randint(0, 1))
         html = etree.HTML(resp.text)
         # print(resp.text)
         # 失效url
@@ -97,12 +93,10 @@ class GETLINK:
             open("shixiao_pagelink.txt", "a+", encoding="utf-8").write(url + "\n")
             print(f"失效pagelink {url}")
             return
+        # cookie失效或者ip失效
         if len(result_div) == 0 and len(shixiao_div) == 0 and len(titles) == 0:
-            sleep(10)
             self.get_cookies_()
-            self.get_links(
-                url, input_value_
-            )  # 如果此请求无效则再次进行该url的请求并携带新的cookie
+            self.get_links(url, all_json)  # 如果此请求无效则再次进行该url的请求并携带新的cookie
 
         net_page = html.xpath("//a[@class='LLNLxf']")
         page_links = html.xpath("//a[@class='fl']/@href")
@@ -114,46 +108,46 @@ class GETLINK:
             with open(self.page_links_path, "a+", encoding="utf") as f:
                 if url not in self.pagelinks_getted:
                     self.pagelinks_getted.append(url)
-                    self.all_json["url"] = url
-                    f.write(json.dumps(self.all_json, ensure_ascii=False) + "\n")
+                    all_json["url"] = url
+                    f.write(json.dumps(all_json, ensure_ascii=False) + "\n")
                     print(f"{url}\t已存储")
                 for link in page_links:
                     if "https://www.google.com" + link not in self.pagelinks_getted:
                         link_ = "https://www.google.com" + link
-                        self.all_json["url"] = link_
-                        f.write(json.dumps(self.all_json, ensure_ascii=False) + "\n")
+                        all_json["url"] = link_
+                        f.write(json.dumps(all_json, ensure_ascii=False) + "\n")
                         self.pagelinks_getted.append(link_)
                         print(f"{link_}\t已存储")
             # 存储input进度
-            self.input_value_getted[input_value_] = {
+            self.input_value_getted[all_json['input']] = {
                 "url": url,
-                "source": self.all_json["source"],
-                "lang": self.all_json["lang"],
+                "source": all_json["source"],
+                "lang": all_json["lang"],
             }
             with open(self.input_value_getted_path, "w", encoding="utf") as fp:
                 fp.write(json.dumps(self.input_value_getted, ensure_ascii=False))
-            self.get_links(page_Lastlink, input_value_)
+            self.get_links(page_Lastlink, all_json)
 
         else:
             # 存储pagelink
             with open(self.page_links_path, "a+", encoding="utf") as f:
                 if url not in self.pagelinks_getted:
                     self.pagelinks_getted.append(url)
-                    self.all_json["url"] = url
-                    f.write(json.dumps(self.all_json, ensure_ascii=False) + "\n")
+                    all_json["url"] = url
+                    f.write(json.dumps(all_json, ensure_ascii=False) + "\n")
                     print(f"{url}\t已存储")
                 for link in page_links:
                     if "https://www.google.com" + link not in self.pagelinks_getted:
                         link_ = "https://www.google.com" + link
-                        self.all_json["url"] = link_
-                        f.write(json.dumps(self.all_json, ensure_ascii=False) + "\n")
+                        all_json["url"] = link_
+                        f.write(json.dumps(all_json, ensure_ascii=False) + "\n")
                         self.pagelinks_getted.append(link_)
                         print(f"{link_}\t已存储")
             # 存储input进度
-            self.input_value_getted[input_value_] = {
+            self.input_value_getted[all_json['input']] = {
                 "url": url,
-                "source": self.all_json["source"],
-                "lang": self.all_json["lang"],
+                "source": all_json["source"],
+                "lang": all_json["lang"],
             }
             with open(self.input_value_getted_path, "w", encoding="utf") as fp:
                 fp.write(json.dumps(self.input_value_getted, ensure_ascii=False))
@@ -172,6 +166,8 @@ class GETLINK:
                 self.all_json["lang"] = data_json["lang"]
                 if "source" in list(data_json.keys()):
                     self.all_json["source"] = data_json["source"]
+                else:
+                    self.all_json["source"] = ''
                 url = base_url.format(input_value)
                 if input_value in list(self.input_value_getted.keys()):
                     if len(self.input_value_getted) != 0:
@@ -182,8 +178,53 @@ class GETLINK:
                         else:
                             print(f"{input_value} 已获取")
                             continue
-                self.get_cookies_()
                 self.get_links(url, input_value)
             except Exception as e:
                 print(e)
                 continue
+
+    def run_GETPageLink_POOL(self):
+        # 使用 ThreadPoolExecutor 来并行处理
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            futures = []
+            base_url = "https://www.google.com/search?q={}&sca_esv=db58c19f0507c741&sxsrf=AE3TifN97wGIyWza2EbuBYKa2yXOT6lZSw:1760264697583&ei=-YHraKyzI-iqvr0P1LzR-Ao&start=0&sa=N&sstk=Af77f_cWlwqf8K4dahR2Wv7zD8omr0rUtYibsg0CGkzx-53dc7IZxnO7-cbN_FK6w8cUVAO7epQ0fWsib9sxotb8z7g5lJHgwQfEgA-6twu7mdRmZGQwZ1nsfDAqegko536U&ved=2ahUKEwjsk4qAuZ6QAxVola8BHVReFK84WhDy0wN6BAgJEAQ&biw=1536&bih=695&dpr=1.25"
+            self.get_GettedLinks()
+            self.get_input_value()
+            self.get_cookies_()
+            self.get_InputValueGetted()
+            for data_json in self.input_value:
+                all_json = {
+                    "url": "",
+                    "input": "",
+                    "source": "",
+                    "lang": "",
+                }
+                try:
+                    # 构建all_json
+                    all_json["input"] = input_value = data_json["input"]
+                    all_json["lang"] = data_json["lang"]
+                    if "source" in list(data_json.keys()):
+                        all_json["source"] = data_json["source"]
+                    else:
+                        all_json["source"] = ''
+                    url = base_url.format(input_value)
+                    if input_value in list(self.input_value_getted.keys()):
+                        if len(self.input_value_getted) != 0:
+                            input_value_last, _ = list(self.input_value_getted.items())[-1]
+                            if input_value == input_value_last:
+                                url = _["url"]
+                                input_value = input_value_last
+                            else:
+                                print(f"{input_value} 已获取")
+                                continue
+                    futures.append(executor.submit(self.get_links, url, all_json))
+                except Exception as e:
+                    print(e)
+
+            # 等待所有任务完成
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()  # 获取结果，以便捕获异常
+                except Exception as e:
+                    print(e)
+                    continue  # 即使某个任务失败，也继续执行其他任务
