@@ -1,4 +1,4 @@
-require('./env')
+// require('./env')
 
 
 window.KPSDK = {};   // 这里更换到环境中因为可能是node环境与浏览器环境的一些原因

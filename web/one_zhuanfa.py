@@ -89,18 +89,20 @@ def Geetest4_Ocr():
 
 def get_s(ufrom, uid):
     hex_chars = "0123456789abcdef"
-    key2_s = hashlib.sha512(ufrom.encode()).hexdigest()
-    key1_s = hashlib.sha512(('CypCHG2kSlRkdvr2RG1QF8b2lCWXl7k7' + uid + ufrom).encode()).hexdigest()
+    key2_s = hashlib.sha512(ufrom.encode()).hexdigest().lower()
+    # print(key2_s)
+    key1_s = hashlib.sha512(('CypCHG2kSlRkdvr2RG1QF8b2lCWXl7k7' + uid + ufrom).encode()).hexdigest().lower()
     j = 0
     S = ''
     for i in range(8):
         j += hex_chars.index(key2_s[j])
+        # print(j)
         S += key1_s[j]
     return S
 
 
 def random_emoji():
-    emoji_text = '😀😁😄🥵😂👍'
+    emoji_text = '😀😁😄🥵😂👍✨💯👏⭐🌟👀🤔✌️🤝'
     random.seed()  # 等价于 置随机数种子()
     emoji_list = list(emoji_text)
     result = ""
@@ -109,7 +111,7 @@ def random_emoji():
     return result
 
 
-def one_zhuanfa(uid, gsid, zhuanfaid, sessionid):
+def one_zhuanfa(uid, gsid, zhuanfaid, sessionid,proxies):
     url = 'https://api.weibo.cn/2/statuses/repost'
     s = get_s('12DC193010', uid)
     i = get_s('1081093010', uid)
@@ -140,22 +142,24 @@ def one_zhuanfa(uid, gsid, zhuanfaid, sessionid):
     }
     resp_text = ''
     for i in range(10):
-        proxies = {}
         resp = requests.post(url, data, headers=headers, proxies=proxies, verify=False, timeout=20)
         resp_text = resp.text
         if resp_text:
             break
     resp_json = json.loads(resp_text)
     if 'errmsg' in resp_json.keys():
-        if resp_json['errmsg'] == '操作频繁，请您稍后再试':
+        if '操作频繁' in resp_json['errmsg']:
             print(resp_json)
             return None
         if '你的账号异常行为' in resp_json['errmsg']:
             print(resp_json)
             return None
+        if '由于你近期修改过密码' in resp_json['errmsg']:
+            print(resp_json)
+            return None
 
     if 'exception_key' not in resp_json.keys():
-        # print(resp_json)
+        print(resp_json)
         if resp_json['statuses']['retweeted_status']['mid'] == zhuanfaid or resp_json['idstr'] == zhuanfaid or resp_json['statuses']['pidstr'] == zhuanfaid:
             print('转发成功！！！')
             return resp_json
@@ -200,7 +204,7 @@ def jiyan(uid, gsid, zhuanfaid, sessionid, exception_key):
 
 
 def one_zhuanfa_jiyan(uid, gsid, zhuanfaid, exception_key, captcha_id, challenge, captcha_output, gen_time, lot_number,
-                      pass_token):
+                      pass_token, proxies):
     S = get_s('12DC193010', uid)
     i = get_s('1081093010', uid)
     url = f"https://api.weibo.cn/2/geetest/verify?aid=&c=weicoabroad&from=12DC193010&gsid={gsid}&lang=zh_CN&s={S}&ua=iPhone8%2C1_iOS15.8_Weibo_intl._6510_wifi__iphone__os15.8"
@@ -236,54 +240,62 @@ def one_zhuanfa_jiyan(uid, gsid, zhuanfaid, exception_key, captcha_id, challenge
 
     resp_text = ''
     for i in range(10):
-        proxies = {}
         resp = requests.post(url, data, headers=headers, proxies=proxies, verify=False, timeout=20)
         resp_text = resp.text
         if resp_text:
             break
     resp_json = json.loads(resp_text)
     if 'errmsg' in resp_json.keys():
-        if resp_json['errmsg'] == '操作频繁，请您稍后再试':
-            return False
+        if '操作频繁' in resp_json['errmsg']:
+            print(resp_json)
+            return None
+        if '你的账号异常行为' in resp_json['errmsg']:
+            print(resp_json)
+            return None
+        if '由于你近期修改过密码' in resp_json['errmsg']:
+            print(resp_json)
+            return None
 
     if 'exception_key' not in resp_json.keys():
-        # print(resp_json)
+        print(resp_json)
         if resp_json['statuses']['retweeted_status']['mid'] == zhuanfaid or resp_json['idstr'] == zhuanfaid or \
                 resp_json['statuses']['pidstr'] == zhuanfaid:
-            print('极验验证 转发成功！！！')
+            print('转发成功！！！')
             return resp_json
-        print('极验验证 转发失败！！！')
         return False
     else:
-        print('极验验证 转发失败！！！')
         return False
 
 
 if __name__ == '__main__':
     a = {}
     for i in range(20):
-        for j in range(10):
-            a = Geetest4_Ocr()
-            if 'captcha_output' in a.keys():
-                break
-        captcha_output = a['captcha_output']
-        gen_time = a['gen_time']
-        lot_number = a['lot_number']
-        pass_token = a['pass_token']
-        gsid = '_2A25FzBYFDeRxGe9O6VoY9S3NwjWIHXVk2C7NrDV6PUJbkdAbLUPmkWpNdSMCGnQFCmx5xCbwNLgQlQa4GQ4q8mbT'
-        uid = '9028953199'
+        gsid = '_2A25FzWoHDeRxGe5N71US8SnLwz6IHXVk2_rPrDV6PUJbkdAbLXHgkWpNdSJ-GgFj0eg3_UtdULIxg69WI9s9JQuo'
+        uid = '8347317782'
         zhuanfaid = '5223466231924975'
-        sessionid = '123'
-        exception_key = '123'
-        b = one_zhuanfa(uid, gsid, zhuanfaid, sessionid)
+        sessionid = ''.join([str(random.randint(0, 9)) for _ in range(5)])
+        exception_key = sessionid
+        proxies = {
+            'http': 'http://myserver:123456@a2fec483f49537d8.yiu.us.ip2world.vip:6001',
+            'https': 'http://myserver:123456@a2fec483f49537d8.yiu.us.ip2world.vip:6001',
+        }
+        b = one_zhuanfa(uid, gsid, zhuanfaid, sessionid,proxies)
         if b == None:
             print('请更换账号， 本账号失效')
             continue
         if b == False:
             print('出现极验验证')
+            for j in range(10):
+                a = Geetest4_Ocr()
+                if 'captcha_output' in a.keys():
+                    break
+            captcha_output = a['captcha_output']
+            gen_time = a['gen_time']
+            lot_number = a['lot_number']
+            pass_token = a['pass_token']
             c = jiyan(uid, gsid, zhuanfaid, sessionid, exception_key)
             captcha_id = c['captcha_id']
             challenge = c['challenge']
             one_zhuanfa_jiyan(uid, gsid, zhuanfaid, exception_key, captcha_id, challenge, captcha_output, gen_time,
-                              lot_number, pass_token)
+                              lot_number, pass_token,proxies)
         sleep(360)
