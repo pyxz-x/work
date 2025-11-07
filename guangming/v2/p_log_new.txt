@@ -1,0 +1,129 @@
+atob
+btoa
+encodeURIComponent
+decodeURIComponent
+escape
+unescape
+11
+EMpf3REuWARIVQ==
+EMpf3REuWARIVQ==
+Math
+atob
+btoa
+encodeURIComponent
+decodeURIComponent
+escape
+unescape
+1
+object
+function
+object
+function
+toString
+indexOf
+prototype
+undefined
+window
+window
+[object Window]
+window
+self
+Window
+Window
+document
+document
+[object Document]
+[object HTMLDocument]
+Document
+Document
+Document
+[object Object]
+[object Document]
+[object Document Prototype]
+navigator
+navigator
+[object Navigator]
+Navigator
+Navigator
+Navigator
+[object Object]
+[object Navigator]
+[object Navigator Prototype]
+location
+Location
+screen
+screen
+[object Screen]
+Screen
+Screen
+Screen
+[object Object]
+[object Screen]
+[object Screen Prototype]
+Element 
+Element
+Element
+[object Object]
+[object Element]
+[object Element Prototype]
+HTMLElement
+HTMLElement
+HTMLElement
+[object Object]
+[object HTMLElement]
+[object HTMLElement Prototype]
+HTMLHeadElement
+HTMLHeadElement
+HTMLHeadElement
+[object Object]
+[object HTMLHeadElement]
+[object HTMLHeadElement Prototype]
+HTMLBodyElement
+HTMLBodyElement
+HTMLBodyElement
+[object Object]
+[object HTMLBodyElement]
+[object HTMLBodyElement Prototype]
+Audio
+Audio
+Audio
+[object Object]
+[object HTMLAudioElement]
+[object HTMLAudioElement Prototype]
+Image
+Image
+Image
+[object Object]
+[object HTMLImageElement]
+[object HTMLImageElement Prototype]
+HTMLScriptElement
+HTMLScriptElement
+HTMLScriptElement
+[object Object]
+[object HTMLScriptElement]
+[object HTMLScriptElement Prototype]
+Node Node Node[objectObject][objectNode][objectNodePrototype]
+Text Text Text[objectObject][objectText][objectTextPrototype]
+StyleSheet StyleSheet StyleSheet[objectObject][objectStyleSheet][objectStyleSheetPrototype]
+Comment Comment Comment[objectObject][objectComment][objectCommentPrototype]
+onmouse
+downonmouseup 
+MouseEvent MouseEvent MouseEvent[objectObject][objectMouseEvent][objectMouseEventPrototype]
+onkeydownonkeyupKeyboardEventKeyboardEventKeyboardEvent[objectObject][objectKeyboardEvent][objectKeyboardEventPrototype]
+focusscrollgetSelectiongetComputedStyle
+document createElement p
+document createElement<!---->--<!---->
+innerHTML
+innerText innerText--div
+document createElement p
+document createElement 
+append Child cloneNode
+appendChild insertBefore
+outerHTML
+outerHTML <div><div></div><p></p></div>
+global processErrorstackatModule._compile(module.js:internal/modules/cjs/loaderatevalmachine.<anonymous>:chromechrometabsGM_infoSekiroClientHlclient01111
+16b903f5c094af2bbf624081473ba341
+16b903f5c094af2bbf624081473ba341
+16b903f5c094af2bbf624081473ba341 
+Script snippet
+16b903f5c094af2bbf624081473ba341
